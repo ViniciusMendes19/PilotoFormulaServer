@@ -126,6 +126,7 @@ public class PilotoServiceTests {
             // verifica se o erro foi lançado corretamente
             Assertions.assertEquals("Erro no repositório", ex.getMessage());
         }
+
     }
 
     @Test//talvez ruim
