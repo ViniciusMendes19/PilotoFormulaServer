@@ -162,7 +162,7 @@ public class PilotoControllerTests {
 
     @Test
     public void testeDeletarPilotoIDErro(){
-        Mockito.doThrow(new RuntimeException("Erro ao deletar piloto")).when(pilotoService).deletarPilotoID(10L);
+        Mockito.doThrow(new RuntimeException("Erro ao deletar piloto, ID não existe")).when(pilotoService).deletarPilotoID(10L);
         try{
             pilotoController.deletarPilotoID(10L);
         }catch (ResponseStatusException ex) {
