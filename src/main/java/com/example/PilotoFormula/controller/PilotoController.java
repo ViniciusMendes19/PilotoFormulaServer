@@ -16,7 +16,7 @@ public class PilotoController {
     private PilotoService pilotoService;
 
     @PostMapping("/adicionarPiloto")
-    public PilotoEntity adicionarPiloto(@RequestBody @Valid PilotoEntity pilotoEntity) {
+    public PilotoEntity adicionarPiloto(@RequestBody PilotoEntity pilotoEntity) {
             return pilotoService.adicionarPiloto(pilotoEntity);
     }
 
