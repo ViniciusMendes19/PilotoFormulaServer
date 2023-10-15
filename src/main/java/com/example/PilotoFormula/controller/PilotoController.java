@@ -15,6 +15,11 @@ public class PilotoController {
     @Autowired
     private PilotoService pilotoService;
 
+    public PilotoController(PilotoService pilotoService) {
+        this.pilotoService=pilotoService;
+    }
+
+
     @PostMapping("/adicionarPiloto")
     public PilotoEntity adicionarPiloto(@RequestBody PilotoEntity pilotoEntity) {
             return pilotoService.adicionarPiloto(pilotoEntity);
