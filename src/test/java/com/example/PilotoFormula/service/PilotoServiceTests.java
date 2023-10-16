@@ -1,92 +1,100 @@
 package com.example.PilotoFormula.service;
 
+import com.example.PilotoFormula.exceptions.ErroNaoEncontrado;
+import com.example.PilotoFormula.exceptions.ErroSolicitacao;
 import com.example.PilotoFormula.model.entities.PilotoEntity;
 import com.example.PilotoFormula.model.repository.PilotoRepository;
 import com.example.PilotoFormula.model.service.PilotoService;
-import org.bouncycastle.util.MemoableResetException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.el.MethodNotFoundException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class PilotoServiceTests {
-
-    @InjectMocks
-    private PilotoService pilotoService;
 
     @Mock
     private PilotoRepository pilotoRepository;
 
-    PilotoEntity pilotoEntity = PilotoEntity.builder()
-            .id((long)2)
-            .nome("Nome")
-            .nacionalidade("Brasileiro")
-            .equipe("Ferrari")
-            .build();
+    @InjectMocks
+    private PilotoService pilotoService;
 
-    PilotoEntity pilotoEntityNomeNull = PilotoEntity.builder()
-            .id((long)2)
-            .nome(null)
-            .nacionalidade("Brasileiro")
-            .equipe("Ferrari")
-            .build();
+    private PilotoEntity pilotoEntity;
 
-    PilotoEntity pilotoEntityNacionalidadeNull = PilotoEntity.builder()
-            .id((long)2)
-            .nome("João")
-            .nacionalidade(null)
-            .equipe("Ferrari")
-            .build();
-
-    PilotoEntity pilotoEntityEquipeNull = PilotoEntity.builder()
-            .id((long)2)
-            .nome("João")
-            .nacionalidade("Brasileiro")
-            .equipe(null)
-            .build();
-
-    PilotoEntity pilotoEntityTodosNull = PilotoEntity.builder()
-            .id(null)
-            .nome(null)
-            .nacionalidade(null)
-            .equipe(null)
-            .build();
-
-
-    @Test
-    void quandoAdicionarPilotoRetornarSucesso() {
-        Mockito.when(pilotoService.adicionarPiloto(pilotoEntity)).thenReturn(pilotoEntity);
-        PilotoEntity resposta = pilotoService.adicionarPiloto(pilotoEntity);
-        Assertions.assertNotNull(resposta);
+    @BeforeEach
+    public void setup() {
+        pilotoEntity = new PilotoEntity();
+        pilotoEntity.setId(1L);
+        pilotoEntity.setNome("Teste");
+        pilotoEntity.setNacionalidade("Teste");
+        pilotoEntity.setEquipe("Teste");
     }
 
     @Test
-    void quandoAdicionarPilotoRetornarErroNomeNull() {
-        Mockito.when(pilotoService.adicionarPiloto(pilotoEntityNomeNull)).thenReturn(pilotoEntityNomeNull);
-        Assertions.assertThrows(MethodNotFoundException.class, () -> pilotoService.adicionarPiloto(pilotoEntityNomeNull));
+    public void testeAdicionarPilotoSucesso() {
+        Mockito.when(pilotoRepository.save(pilotoEntity)).thenReturn(pilotoEntity);
+        PilotoEntity result = pilotoService.adicionarPiloto(pilotoEntity);
+        Assertions.assertEquals(pilotoEntity, result);
     }
 
     @Test
-    void quandoAdicionarPilotoRetornarErroNacionalidadeNull() {
-        Mockito.when(pilotoService.adicionarPiloto(pilotoEntityNacionalidadeNull)).thenReturn(pilotoEntityNacionalidadeNull);
-        Assertions.assertThrows(MethodNotFoundException.class, () -> pilotoService.adicionarPiloto(pilotoEntityNacionalidadeNull));
+    public void testeAdicionarPilotoErro() {
+        PilotoEntity invalidPilotoEntity = new PilotoEntity();
+        invalidPilotoEntity.setNome("");
+        invalidPilotoEntity.setNacionalidade("");
+        invalidPilotoEntity.setEquipe("");
+
+        Assertions.assertThrows(ErroSolicitacao.class, () -> pilotoService.adicionarPiloto(invalidPilotoEntity));
     }
 
     @Test
-    void quandoAdicionarPilotoRetornarErroEquipeNull() {
-        Mockito.when(pilotoService.adicionarPiloto(pilotoEntityEquipeNull)).thenReturn(pilotoEntityEquipeNull);
-        Assertions.assertThrows(MethodNotFoundException.class, () -> pilotoService.adicionarPiloto(pilotoEntityEquipeNull));
+    public void testeBuscarTodosPilotosSucesso() {
+        List<PilotoEntity> pilotos = Arrays.asList(pilotoEntity);
+        Mockito.when(pilotoRepository.findAll()).thenReturn(pilotos);
+        List<PilotoEntity> result = pilotoService.buscarTodosPilotos();
+        Assertions.assertEquals(pilotos, result);
     }
 
+    @Test
+    public void testeBuscarTodosPilotosErro() {
+        Mockito.when(pilotoRepository.findAll()).thenReturn(Arrays.asList());
+        Assertions.assertThrows(ErroNaoEncontrado.class, () -> pilotoService.buscarTodosPilotos());
+    }
 
     @Test
-    void quandoAdicionarPilotoRetornarErroTodosNull() {
-        Mockito.when(pilotoService.adicionarPiloto(pilotoEntityTodosNull)).thenReturn(pilotoEntityTodosNull);
-        Assertions.assertThrows(MethodNotFoundException.class, () -> pilotoService.adicionarPiloto(pilotoEntityTodosNull));
+    public void testeBuscarPilotoIDSucesso() {
+        Mockito.when(pilotoRepository.findById(1L)).thenReturn(Optional.of(pilotoEntity));
+        PilotoEntity result = pilotoService.buscarPilotoID(1L);
+        Assertions.assertEquals(pilotoEntity, result);
+    }
+
+    @Test
+    public void testeBuscarPilotoIDErro() {
+        Mockito.when(pilotoRepository.findById(1L)).thenReturn(Optional.empty());
+        Assertions.assertThrows(ErroNaoEncontrado.class, () -> pilotoService.buscarPilotoID(1L));
+    }
+
+    @Test
+    public void testeDeletarPilotoIDSucesso() {
+        Mockito.when(pilotoRepository.existsById(1L)).thenReturn(true);
+        pilotoService.deletarPilotoID(1L);
+        Mockito.verify(pilotoRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    public void testeDeletarPilotoIDErro() {
+        Mockito.when(pilotoRepository.existsById(1L)).thenReturn(false);
+        Assertions.assertThrows(ErroNaoEncontrado.class, () -> pilotoService.deletarPilotoID(1L));
     }
 }
